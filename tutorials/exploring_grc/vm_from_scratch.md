@@ -22,11 +22,11 @@ sudo apt-get install -y git cmake g++ libboost-all-dev libgmp-dev swig python3-n
   python3-pyqt5 liblog4cpp5-dev libzmq3-dev python3-yaml python3-click python3-click-plugins python3-zmq \
   python3-scipy python3-gi python3-gi-cairo gir1.2-gtk-3.0 libcodec2-dev libgsm1-dev pybind11-dev \
   python3-matplotlib libsndfile1-dev python3-pip libsoapysdr-dev soapysdr-tools
- 
+
 sudo pip install pygccxml pyqtgraph
 ```
 
-Next we must install VOLK from source.  VOLK stands for Vector-Optimized Library of Kernels and it is designed to help GNU Radio work with the CPU's [SIMD](https://en.wikipedia.org/wiki/SIMD) instruction set. These are very powerful vector operations that can give signal processing a huge boost in performance. 
+Next we must install VOLK from source.  VOLK stands for Vector-Optimized Library of Kernels and it is designed to help GNU Radio work with the CPU's [SIMD](https://en.wikipedia.org/wiki/SIMD) instruction set. These are very powerful vector operations that can give signal processing a huge boost in performance.
 
 ```console
 cd ~
@@ -39,7 +39,7 @@ make -j4
 sudo make install
 sudo ldconfig
 ```
-Now we can install GNU Radio, specifically version 3.9.  Note the first command below is a band aid fix for a bug related to cmake finding boost and looking in the wrong spot.  
+Now we can install GNU Radio, specifically version 3.9.  Note the first command below is a band aid fix for a bug related to cmake finding boost and looking in the wrong spot.
 
 ```console
 sudo ln -s /usr/include /include
@@ -59,18 +59,17 @@ If no errors occurred, you should now have GNU Radio installed!
 
 ### Installing Azure SDR Blocks from Source
 
-Next let's install the gr-azure-software-radio out-of-tree module (OOT) so we can work with Azure.  A dependency is the Azure CLI which can be installed with:
+Next let's install the gr-azure out-of-tree module (OOT) so we can work with Azure.  A dependency is the Azure CLI which can be installed with:
 ```console
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 ```
 
-Next lets clone our azure-software-radio repo and install all dependencies with:
+Next lets clone our gr-azure repo and install all dependencies with:
 ```console
 sudo apt-get install -y cmake python3-pip liborc-dev doxygen
 cd ~
-git clone https://github.com/microsoft/azure-software-radio.git
-cd azure-software-radio/
-cd gr-azure-software-radio/
+git clone https://github.com/microsoft/gr-azure.git
+cd gr-azure/
 pip install pytest pybind11
 pip install -r python/requirements.txt
 ```

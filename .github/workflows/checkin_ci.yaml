@@ -26,11 +26,11 @@ jobs:
       - uses: actions/checkout@master
       - name: Build
         run: |
-          cd gr-azure-software-radio; pip install -r python/requirements.txt
+          pip install -r python/requirements.txt
           mkdir build; cd build; cmake ..; cmake --build . -j --config Release
       - name: Install
         run: |
-          cd gr-azure-software-radio/build
+          cd build
           sudo make install -j
       - name: Update GNURadio preferences
         run: |
@@ -46,7 +46,7 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: |
-          cd gr-azure-software-radio/build
+          cd build
           export PYTHONPATH=${{ secrets.PYTHONPATH }}; export LD_LIBRARY_PATH=${{ secrets.LD_LIBRARY_PATH }};ctest -V -T test;
         shell: bash
       - name: pylint
@@ -54,7 +54,7 @@ jobs:
         run: |
           export PYTHONPATH=${{ secrets.PYTHONPATH }}; export LD_LIBRARY_PATH=${{ secrets.LD_LIBRARY_PATH }};
           cd ..
-          pylint azure-software-radio --rcfile azure-software-radio/.pylintrc
+          pylint gr-azure --rcfile gr-azure/.pylintrc
       - name: check step
         if: success()
         run: echo pylint has passed all checks
