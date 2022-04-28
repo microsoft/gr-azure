@@ -16,16 +16,16 @@ jobs:
         username: ${{  secrets.ACR_PRINCIPAL_ID }}
         password: ${{  secrets.ACR_PRINCIPAL_PWD }}
     timeout-minutes: 20
-           
+
     steps:
       - uses: actions/checkout@master
       - name: Build
         run: |
-          cd gr-azure-software-radio; pip install -r python/requirements.txt
+          pip install -r python/requirements.txt
           mkdir build; cd build; cmake ..; cmake --build . -j --config Release
       - name: Install
         run: |
-          cd gr-azure-software-radio/build
+          cd build
           sudo make install -j
       - name: Update GNURadio preferences
         run: |
@@ -48,8 +48,8 @@ jobs:
           AZURE_KEYVAULT_TEST_KEY: ${{ secrets.AZURE_KEYVAULT_TEST_KEY }}
           AZURE_STORAGE_READONLY_SAS: ${{ secrets.AZURE_STORAGE_READONLY_SAS }}
         run: |
-          cd gr-azure-software-radio/build
-          export PYTHONPATH=${{ secrets.PYTHONPATH }}; export LD_LIBRARY_PATH=${{ secrets.LD_LIBRARY_PATH }};ctest -V -T test; 
+          cd build
+          export PYTHONPATH=${{ secrets.PYTHONPATH }}; export LD_LIBRARY_PATH=${{ secrets.LD_LIBRARY_PATH }};ctest -V -T test;
           echo " "
           echo "Now running integration..."
           cd ..; cd python; python3 -m unittest integration_blob_source.py; python3 -m unittest integration_blob_sink.py; python3 -m unittest integration_default_credentials.py; python3 -m unittest integration_eventhub_sink.py; python3 -m unittest integration_eventhub_source.py;
@@ -60,7 +60,7 @@ jobs:
         run: |
           export PYTHONPATH=${{ secrets.PYTHONPATH }}; export LD_LIBRARY_PATH=${{ secrets.LD_LIBRARY_PATH }};
           cd ..
-          pylint azure-software-radio --rcfile azure-software-radio/.pylintrc
+          pylint gr-azure --rcfile gr-azure/.pylintrc
       - name: check step
         if: success()
         run: echo pylint has passed all checks
