@@ -24,10 +24,10 @@ ignore=CVS, docs, bindings, build
 
 # Add files or directories matching the regex patterns to the ignore-list. The
 # regex matches against paths.
-ignore-paths=^azure-software-radio\docs\doxygen\.*$,^azure-software-radio/gr-azure-software-radio/docs/doxygen/.*$,^src/tests/.*$, 
-            ^azure-software-radio/gr-azure-software-radio/python/bindings/.*$, 
-            ^azure-software-radio/gr-azure-software-radio/docs/doxygen/doxyxml/.*$, 
-            ^azure-software-radio\docs.*$
+ignore-paths=^docs\doxygen\.*$,^docs/doxygen/.*$,^src/tests/.*$,
+            ^python/bindings/.*$,
+            ^docs/doxygen/doxyxml/.*$,
+            ^docs.*$
 
 # Files or directories matching the regex patterns are skipped. The regex
 # matches against base names, not paths.
