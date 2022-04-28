@@ -1,119 +1,52 @@
 # Azure software radio examples
 
+Below you will find examples for each block within this OOT module.
+
 ## Table of Contents
-- [DIFI Examples](#difi-examples)
-- [Key Vault Example](#key-vault-example)
-- [Blob Examples](#blob-source-and-sink-examples)
-- [Event Hub Examples](#event-hub-examples)
-
-# DIFI Examples
-
-The DIFI Source block is based on IEEE-ISTO Std 4900-2021: Digital IF Interoperability 1.0 Standard. The example shows the use of the block in both paired and standalone mode. In paired mode, the DIFI sink is expected to be paired with a DIFI source block, else it will have unexpected behavior. If no DIFI source block is used, the DIFI sink block should be used in standalone mode. In standalone mode one must specify the fields that would have been in a context packet in paired mode. The examples show both of these situations.
-
-- difi_paried_example: This will need an external DIFI source, either hardware or software that sends DIFI packets
-- difi_standalone: This is expected to be run with samples coming from GNURadio and not an external DIFI source
-
-# Key Vault Example
-
-The Key Vault block pull the given key from an Azure Key Vault given the vault name.
-
-In the example, you can see the correct way to input a value into the Azure Key Vault block.
-
-To run the flowgraph correctly, you must setup a Key Vault resource in Azure and replace the KeyVault Name with your Key Vault resource name.
-
-Also, the example assume you have the secretscramble key in your Key Vault. See https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-cli to get started with Key Vault
+- [DIFI Examples](#difi-source-and-sink-examples)
+- [Azure Authentication](#azure-authentication)
+- [Key Vault](#key-vault)
+- [Blob Storage](#blob-storage)
+- [Event Hub](#event-hub)
 
 
-When your resources are ready in Azure, the flowgraph should pull the value from Azure Key Vault, and scramble the sequence with that pulled value.
+## DIFI Source and Sink Examples
+The intent of the Digital Intermediate Frequency Interoperability (DIFI) standard is to enable the digital transformation
+of space, satellite, and related industries by providing a simple, open, interoperable Digital IF/RF standard that
+replaces the natural interoperability of analog IF signals and helps prevent vendor lock-in. The articles linked below
+describe how to run the examples which show how to use the DIFI source and sink blocks that implement the DIFI standard
+for use with GNU Radio.
 
-If you want to enable the Azure Blob sink block, you will need to also setup a storage account and container in that account to store the data. The point of showing this is so that one can see how to use Azure Key Vault to get connection strings to use with Azure services, like Blob.
+- [Quickstart: Running the DIFI source and sink block examples](difi_quickstart.md)
 
-# Blob Source and Sink Examples
-## Blob Example Prerequisites
-To run [blob-sink-example.grc](../examples/blob-sink-example.grc) or [blob-source-example.grc](../examples/blob-source-example.grc), you must first:
-1. Set up a storage account in your Azure subscription
-    - See: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create
-2. Add a container in that storage account.
-    - See: https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#create-a-container
-3. Choose how to authenticate to the blob storage account. This example uses the "default" authentication option, which uses the [DefaultAzureCredential class](https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential) to attempt to authenticate to the blob storage backend with a list of credential types in priority order.
-    - If running on a VM in Azure, you may use the VM's Managed Identity for authentication. See https://docs.microsoft.com/en-us/azure/storage/blobs/authorize-managed-identity for instructions on how to work with blobs and managed identities.
-    - If the VM in Azure has managed identity disabled, or not running on an Azure VM, you may use the Azure CLI to log in to Azure and authenticate to blob storage.
-        - See https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli to get started
-        with the Azure CLI.
-        - Ensure that you have assigned yourself the "Storage Blob Data Contributor" permission for
-        your storage account. See https://docs.microsoft.com/en-us/azure/storage/blobs/assign-azure-role-data-access
+## Azure Authentication
+The remaining examples below require the use Azure resources, most of which require applications to authenticate to them
+in some way before they can be used. Most of the GNU Radio blocks in the Azure software radio Out-of-Tree module support
+ the use of the [DefaultAzureCredential class](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python), which supports a wide variety of credential types, as one of their
+ authentication methods. In general, the examples below try to show how to use the blocks in the Azure software radio
+Out-of-Tree module in applications running on resources in Azure as well as in on premise hardware, such as developer
+systems or edge-deployed servers. [Azure managed identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) can be convenient credentials for use in applications running in Azure,
+while credentials retrieved by [signing in using the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli) can be used interactively from any system with access to Azure.
 
-## Blob Sink Example
-If you plan to use the Azure CLI to authenticate to the blob back end, please run
+The article below walks through how to enable a managed identity on a virtual machine in Azure so that applications
+running on that VM can authenticate to other Azure resources.
 
-```bash
-az login
-```
+- [Azure Managed Identity Configuration with the Azure CLI](managed_identity_cli_quickstart.md)
+## Key Vault
 
-and then launch GNU Radio Companion from the same terminal. This will ensure your authentication tokens are available when running the flowgraph. Open [blob-sink-example.grc](../examples/blob-sink-example.grc).
+The Key Vault block is used to retrieve secrets stored in Azure Key Vault, and these two quickstarts show how they can be used within GNU Radio.
 
-To run the flowgraph, you must:
-- change the blob_url variable to use your actual storage account URL
-- change the blob_container_name variable to use the container name you created as part of the [Blob Prerequisites section above](#blob-example-prerequisites)
+- [Quickstart: Key Vault with Role Based Access Controls and Azure CLI Credentials](key_vault_rbac_az_login_quickstart.md)
+- [Quickstart: Key Vault with Role Based Access Controls and Managed Identities](key_vault_rbac_managed_id_quickstart.md)
 
-Run the flowgraph until at least `blob_block_length` (defaults to 10M) samples have been generated, then close the flowgraph. Navigate to your blob container in the Azure portal and you should see a new blob object named "test-signal.dat".
+## Blob Storage
+Many GNU Radio applications involve working with files, and the Blob Source and Sink blocks allow files to be stored and retrieved from Azure with ease.  The following quickstarts show how to use these blocks, depending on whether you are on a VM with Managed ID enabled, or are using `az login`.
 
-## Blob Source Example
-If you plan to use the Azure CLI to authenticate to the blob back end, please run
+- [Quickstart: Running the Blob Source and Sink blocks with Managed ID](blob_managed_id_quickstart.md)
+- [Quickstart: Running the Blob Source and Sink blocks with `az login`](blob_az_login_quickstart.md)
 
-```bash
-az login
-```
+## Event Hub
+The Event Hub blocks provide an interface to send and receive events to Azure Event Hubs using the message passing interface in GNU Radio. The article below walks through examamples of both the Source and Sink blocks.
 
-and then launch GNU Radio Companion from the same terminal. This will ensure your authentication tokens are available when running the flowgraph. Open [blob-source-example.grc](../examples/blob-source-example.grc).
-
-To run the flowgraph, you must:
-- change the blob_url variable to use your actual storage account URL
-- change the blob_container_name variable to use the container name you created as part of the [Blob Prerequisites section above](#blob-example-prerequisites)
-- change the blob_name to point to an existing blob object. The simplest way to create a blob object is to run the (Blob Sink Example)(#blob-sink-example) first.
-
-Run the flowgraph and you should see the QT GUI Sink block showing the contents of your blob object.
-
-Once you are done with running the examples, delete your blob object to stop being charged for storage.
-
-# Event Hub Examples
-## Event Hub Example Prerequisites
-To run [eventhub_sink_example.grc](../examples/eventhub_sink_example.grc) or [eventhub_source_example.grc](../examples/eventhub-source-example.grc), you must first do the following:
-1. Create an Event Hub in your Azure subscription
-    - See: [Create an Event Hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create) for instructions.
-2. Create a Consumer Group in the Event Hub
-    - See: [Create an Event Hub Consumer Group](https://docs.microsoft.com/en-us/cli/azure/eventhubs/eventhub/consumer-group?view=azure-cli-latest)
-3. Choose how to authenticate to the Azure Event Hub. This example uses the "connection string" authentication option.
-    - See [Get an Event Hub Connection String](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for instructions on how to obtain a connection string.
-
-## Event Hub Sink Example
-If you plan to use the Azure CLI to authenticate to the back end, please run
-
-```bash
-az login
-```
-
-and then launch GNU Radio Companion from the same terminal. This will ensure your authentication tokens are available when running the flowgraph. Open [eventhub_sink_example.grc](../examples/eventhub_sink_example.grc).
-
-To run the flowgraph, you must:
-- change the connection_str variable to use your connection string
-- change the eventhub_name variable to use the event hub entity you created as part of the [Event Hub Prerequisites section above](#event-hub-example-prerequisites)
-
-Run the flowgraph for a few seconds and then close it. Navigate to your event hub in the Azure portal and you should see the events in the 'overview' tab. To process the events, enable the real-time insights under 'process data'.
-
-## Event Hub Source Example
-If you plan to use the Azure CLI to authenticate to the back end, please run
-
-```bash
-az login
-```
-
-and then launch GNU Radio Companion from the same terminal. This will ensure your authentication tokens are available when running the flowgraph. Open [eventhub_source_example.grc](../examples/eventhub_source_example.grc).
-
-To run the flowgraph, you must:
-- change the connection_str variable to use your connection string
-- change the eventhub_name variable to use the event hub entity you created as part of the [Event Hub Prerequisites section above](#event-hub-example-prerequisites)
-- change the consumer_grp variable to use the default or use the created consumer group as part of the [Event Hub Prerequisites section above](#event-hub-example-prerequisites)
-
-Run the flowgraph and you should see the Message Debug block showing the contents of the received events.
+- [Quickstart: Using Azure Event Hubs in GNU Radio](event_hubs_quickstart_cli.md)
 
