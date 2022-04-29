@@ -12,6 +12,7 @@ copyright_owner:
 dependencies:
   - gnuradio (>= 3.9.0)
 repo: https://github.com/microsoft/gr-azure.git
+gr_supported_version: v3.9, v3.10
 stable_release: HEAD
 
 ---
