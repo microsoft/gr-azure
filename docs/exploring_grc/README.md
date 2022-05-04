@@ -19,7 +19,7 @@ Currently the Azure software radio developer VM is in Private Preview and our te
 
 ### Deployment of the Azure software radio developer VM
 
-We will now check if you have access to the developer VM.  If at any point below you run into trouble and need more detailed instructions, reference [this guide](https://github.com/microsoft/azure-software-radio/blob/documentation/cli-updates/pages/devvm.md).
+We will now check if you have access to the developer VM.  If at any point below you run into trouble and need more detailed instructions, reference [this guide](../devvm.md).
 
 1. Open your browser and navigate to [Azure Portal](https://portal.azure.com) and sign-in.
 2. Click "Create a Resource" with the large plus sign.
@@ -47,7 +47,7 @@ We will now check if you have access to the developer VM.  If at any point below
 9. On the VM resource page, record the Public IP Address shown on the right side
 10. Start your favorite RDP client and enter the IP Address and user+password chosen during deployment
 
-At this point you should be in the desktop of your VM, and all instructions will be done within the VM unless otherwise stated.   If you ran into any issues above, please reference [this guide](https://github.com/microsoft/azure-software-radio/blob/documentation/cli-updates/pages/devvm.md).
+At this point you should be in the desktop of your VM, and all instructions will be done within the VM unless otherwise stated.   If you ran into any issues above, please reference [this guide](../devvm.md).
 
 ## Reducing Graphic Latency of Remote Desktop
 

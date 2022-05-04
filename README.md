@@ -2,7 +2,9 @@
 
 The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure cloud resources from within a GNU Radio flowgraph. You can use this OOT module with your existing GNU Radio development environment, or within a VM in the cloud.  Example use-cases involve storing and retrieving RF recordings from Blob (file) storage, communicating with [DIFI](https://dificonsortium.org/about/) devices from within GNU Radio, or creating complex cloud applications using Azure Event Hubs as a bridge between your flowgraph and [Azure services](https://azure.microsoft.com/en-us/services/).  We are excited to see what can be created by combining GNU Radio with the power and scalability of the cloud!
 
-<center><img src="images/example_flowgraph.png"></center>
+For information on our GNU Radio developer VM available in Azure, see [this guide](docs/devvm.md).  We also have a [set of tutorials](docs/tutorials.md) that use the developer VM and gr-azure.
+
+<center><img src="docs/images/example_flowgraph.png"></center>
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -34,12 +36,12 @@ so you may need to separately install and configure some of them. The Azure soft
 
 - GNU Radio 3.9.x or 3.10.x
 - Python 3.8 or greater
-- python3-pip
 - cmake
 - liborc-dev
 - doxygen
 - pytest
 - pybind11
+- Additional Python packages are listed in python/requirements.txt
 
 See the installation steps below for how to install these dependencies.
 
