@@ -77,7 +77,7 @@ documentation: |-
      the port number for the socket
      
      stream_number:
-     The DIFI (VITA) stream number to expect for this stream. If stream number is -1, the stream number will be ignored, else it will be checked against the stream number in the DIFI (VITA) packets. If they do match, the packets will be dropped.
+     The DIFI (VITA) stream number to expect for this stream. If stream number is -1, the stream number will be ignored, else it will be checked against the stream number in the DIFI (VITA) packets and if they do not match the packets will be dropped.
      
      bit_depth:
      The bit depth
