@@ -120,6 +120,8 @@ It is expected that the user will setup a storage account and a container prior 
 
 There are several ways to authenticate to the Azure blob backend, these blocks support authentication using a connection string, a URL with an embedded SAS token, or use credentials supported by the DefaultAzureCredential class.
 
+To determine the max speed at which samples can be downloaded or uploaded to/from Blob storage, for different Azure regions, run https://www.azurespeed.com/Azure/Download or https://www.azurespeed.com/Azure/Upload on the VM or machine running GNU Radio.
+
 For a brief tutorial on using these blocks, see the [Blob Examples](./examples/README.md#Blob-Source-and-Sink-Examples).
 
 ### Event Hub Blocks
