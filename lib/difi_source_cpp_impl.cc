@@ -4,18 +4,14 @@
 // See License.txt in the project root for license information.
 
 #include <gnuradio/io_signature.h>
-#include "difi_source_cpp_impl.h"
 #include <functional>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/poll.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <chrono>
+
+#include "difi_source_cpp_impl.h"
+#include "tcp_server.h"
+#include "udp_socket.h"
 
 #define NUM_BYTES_PER_WORD (4)
 
@@ -49,46 +45,40 @@ namespace gr {
     }
 
     template <class T>
-    typename difi_source_cpp<T>::sptr difi_source_cpp<T>::make(std::string ip_addr, uint32_t port, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
+    typename difi_source_cpp<T>::sptr difi_source_cpp<T>::make(std::string ip_addr, uint32_t port, uint8_t socket_type, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
     {
-      return gnuradio::make_block_sptr<difi_source_cpp_impl<T>>(ip_addr, port, stream_number, bit_depth, context_pkt_behavior);
+      return gnuradio::make_block_sptr<difi_source_cpp_impl<T>>(ip_addr, port, socket_type, stream_number, bit_depth, context_pkt_behavior);
     }
 
     template <class T>
-    difi_source_cpp_impl<T>::difi_source_cpp_impl(std::string ip_addr, uint32_t port, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
+    difi_source_cpp_impl<T>::difi_source_cpp_impl(std::string ip_addr, uint32_t port, uint8_t socket_type, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
         : gr::sync_block("source_cpp", gr::io_signature::make(0, 0, 0),
                          gr::io_signature::make(1 /* min outputs */,
                                                 1 /*max outputs */,
                                                 sizeof(T))),
-          d_ip_addr(ip_addr),
-          d_port(port),
           d_stream_number(stream_number),
           d_behavior(context_pkt_behavior),
-          d_send(true)
+          d_send(true),
+          d_context(NULL),
+          d_last_pkt_n(-1),
+          d_static_bits(-1),
+          p_tcpserver(NULL),
+          p_udpsocket(NULL)
 
     {
-      d_tv.tv_sec = 0;
-      d_tv.tv_usec = 100000;
-      d_packet_buffer.resize(9000);
-      memset(&d_servaddr, 0, sizeof(d_servaddr));
-      d_servaddr.sin_family = AF_INET;
-      d_servaddr.sin_port = htons(port);
-      d_servaddr.sin_addr.s_addr = INADDR_ANY;
-      d_socket_type = SOCK_DGRAM;
-      d_client_socket = -1;
 
-      if(d_socket_type == SOCK_DGRAM)
+      socket_type = (socket_type == 1) ?  SOCK_STREAM : SOCK_DGRAM;
+
+      if(socket_type == SOCK_STREAM)
       {
-        create_udp_socket();
+        p_tcpserver = new tcp_server(ip_addr,port);
       }
       else
       {
-        create_tcp_socket();
+        p_udpsocket = new udp_socket(ip_addr,port,true);
       }
 
-      d_context = NULL;
-      d_last_pkt_n = -1;
-      d_static_bits = -1;
+      d_packet_buffer.resize(9000);
       this->set_output_multiple(9000);
       d_unpack_idx_size = bit_depth == 8 ? 1 : 2;
 
@@ -100,13 +90,11 @@ namespace gr {
     template <class T>
     difi_source_cpp_impl<T>::~difi_source_cpp_impl()
     {
-      if(d_socket_type == SOCK_STREAM)
-      {
-        close(d_client_socket);
-        FD_CLR(d_socket,&d_rset);
-      }
+      if(p_tcpserver)
+        delete p_tcpserver;
 
-      close(d_socket);
+      if(p_udpsocket)
+        delete p_udpsocket;
     }
 
     template <class T>
@@ -122,16 +110,30 @@ namespace gr {
     int difi_source_cpp_impl<T>::buffer_and_send(T *out, int noutput_items)
     {
       boost::this_thread::disable_interruption disable_interrupt;
-      socklen_t len = sizeof(d_servaddr);
       int size_gotten = -1;
-      if(d_socket_type == SOCK_DGRAM)
+
+      if(p_tcpserver and p_tcpserver->is_client_connected())
       {
-        size_gotten = recvfrom(d_socket, &d_packet_buffer[0], d_packet_buffer.size(),
-                                  MSG_WAITALL, (struct sockaddr *)&d_servaddr, &len);
+        // read the first word to determine the size of the packet
+        size_gotten = p_tcpserver->read(&d_packet_buffer[0],NUM_BYTES_PER_WORD);
+
+        if(size_gotten == NUM_BYTES_PER_WORD)
+        {
+            // compute the number of bytes per packet
+            // per DIFI version 1.0.0 spec each packet contains the packet size (number of 32-bit words) in the header
+            // Packet Size: Bits 0-15
+            // check packet size
+            auto header = unpack_u32(&d_packet_buffer[0]);
+            int pkt_size = NUM_BYTES_PER_WORD * (header&0xffff);
+            int32_t num_bytes_to_read = pkt_size - NUM_BYTES_PER_WORD;
+
+            if(num_bytes_to_read > 0)
+                size_gotten += p_tcpserver->read(&d_packet_buffer[NUM_BYTES_PER_WORD],num_bytes_to_read);
+        }
       }
-      else
+      else if(p_udpsocket)
       {
-        size_gotten = recv_tcp_packet();
+        size_gotten = p_udpsocket->read(&d_packet_buffer[0], d_packet_buffer.size());
       }
 
       if(size_gotten <= 0)
@@ -275,8 +277,8 @@ namespace gr {
       auto r_bit_depth = (context.payload_format >> 32 & 0x0000001f) + 1;
       if (r_bit_depth != d_unpack_idx_size * 8 or (size_gotten != 108 and size_gotten != 72))
       {
-        std::string error_string = r_bit_depth != d_unpack_idx_size * 8 ? 
-                                    "The context packet bit depth does not match the input bit depth, check your configuration.\nContext packet bit depth is: " + std::to_string(r_bit_depth) : 
+        std::string error_string = r_bit_depth != d_unpack_idx_size * 8 ?
+                                    "The context packet bit depth does not match the input bit depth, check your configuration.\nContext packet bit depth is: " + std::to_string(r_bit_depth) :
                                     "The context packet size is not 108 bits per DIFI spec. The context packet recieved size is: " + std::to_string(size_gotten);
         if (d_behavior == context_behavior::throw_exe){
             GR_LOG_ERROR(this->d_logger, error_string);
@@ -324,228 +326,6 @@ namespace gr {
       context.t_cal = unpack_u32(&d_packet_buffer[difi::CONTEXT_PACKET_OFFSETS[idx++]]);
       context.state_indicators = unpack_u32(&d_packet_buffer[difi::CONTEXT_PACKET_OFFSETS[idx++]]);
       context.payload_format = unpack_u64(&d_packet_buffer[difi::CONTEXT_PACKET_OFFSETS[idx++]]);
-    }
-
-    template <class T>
-    void difi_source_cpp_impl<T>::create_udp_socket()
-    {
-
-      if ((d_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not make UDP socket, socket may be in use.");
-        throw std::runtime_error("Could not make UDP socket");
-      }
-
-      int sock_b_size = 2000000;
-      if(setsockopt(d_socket, SOL_SOCKET, SO_RCVBUF, &sock_b_size, sizeof(sock_b_size)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not set socket size");
-        throw std::runtime_error("Could not set socket size");
-      }
-
-      if (setsockopt(d_socket, SOL_SOCKET, SO_RCVTIMEO, &d_tv, sizeof(d_tv)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not set timeout on socket");
-        throw std::runtime_error("Could not set timeout on socket");
-      }
-
-      if (bind(d_socket, (const struct sockaddr *)&d_servaddr,
-               sizeof(d_servaddr)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not connect to port, port may be in use");
-        throw std::runtime_error("Could not connect to port");
-      }
-    }
-
-    template <class T>
-    void difi_source_cpp_impl<T>::create_tcp_socket()
-    {
-
-      if ((d_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not make TCP socket, socket may be in use.");
-        throw std::runtime_error("Could not make TCP socket");
-      }
-
-      int sock_b_size = 2000000;
-      if(setsockopt(d_socket, SOL_SOCKET, SO_RCVBUF, &sock_b_size, sizeof(sock_b_size)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not set socket size");
-        throw std::runtime_error("Could not set socket size");
-      }
-
-      if (setsockopt(d_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &d_tv, sizeof(d_tv)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not set timeout on socket");
-        throw std::runtime_error("Could not set timeout on socket");
-      }
-
-      if (setsockopt(d_socket, SOL_SOCKET, SO_RCVTIMEO, &d_tv, sizeof(d_tv)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not set timeout on socket");
-        throw std::runtime_error("Could not set timeout on socket");
-      }
-
-      if (bind(d_socket, (const struct sockaddr *)&d_servaddr,
-               sizeof(d_servaddr)) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Could not connect to port, port may be in use");
-        throw std::runtime_error("Could not connect to port");
-      }
-
-      if(listen(d_socket, 1) < 0)
-      {
-        GR_LOG_ERROR(this->d_logger, "Error while listening to incoming connections");
-        throw std::runtime_error("Error while listening to incoming connections");
-      }
-
-      FD_ZERO(&d_rset);
-      FD_SET(d_socket, &d_rset);
-      d_client_socket = -1;
-    }
-
-    template <class T>
-    void difi_source_cpp_impl<T>::reset_tcp_connection()
-    {
-      close(d_client_socket);
-      FD_CLR(d_client_socket, &d_rset);
-      d_client_socket = -1;
-      GR_LOG_DEBUG(this->d_logger, "Connection lost");
-    }
-
-    template <class T>
-    int difi_source_cpp_impl<T>::recv_tcp_packet()
-    {
-      if(is_tcp_socket_ready())
-      {
-        // read the first word to determine the size of the packet
-        int size_gotten = tcp_readall(&d_packet_buffer[0],NUM_BYTES_PER_WORD);
-
-        if(size_gotten == NUM_BYTES_PER_WORD)
-        {
-          // compute the number of bytes per packet
-          // per DIFI version 1.0.0 spec each packet contains the packet size (number of 32-bit words) in the header
-          // Packet Size: Bits 0-15
-          // check packet size
-          auto header = unpack_u32(&d_packet_buffer[0]);
-          int pkt_size = NUM_BYTES_PER_WORD * (header&0xffff);
-          int32_t num_bytes_to_read = pkt_size - NUM_BYTES_PER_WORD;
-
-          return size_gotten + tcp_readall(&d_packet_buffer[NUM_BYTES_PER_WORD],num_bytes_to_read);
-        }
-      }
-      return 0;
-    }
-
-    template <class T>
-    bool difi_source_cpp_impl<T>::is_tcp_socket_ready()
-    {
-      if(d_client_socket >= 0)
-        return true;
-      else
-      {
-        // select file descriptors that we want to monitor (server socket)
-        fd_set read_fds;
-        FD_ZERO(&read_fds);
-        FD_SET(d_socket,&read_fds);
-
-        struct timeval tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = 100000;
-
-        int status = select(d_socket+1, &read_fds, NULL, NULL, &tv);
-        if (status < 0)
-        {
-          // get the error code from the file descriptor
-          int error_code;
-          socklen_t len = sizeof(error_code);
-          getsockopt(d_socket, SOL_SOCKET, SO_ERROR, &error_code, &len);
-
-          GR_LOG_ERROR(this->d_logger, "Could not select file descriptor - (server file descriptor error code: " + std::to_string(error_code) + ")");
-          throw std::runtime_error("Could not select file descriptor - (server file descriptor error code: " + std::to_string(error_code) + ")");
-        }
-        // accept incoming connection if client has not connected yet
-        if(FD_ISSET(d_socket, &read_fds))
-        {
-          socklen_t addrlen = sizeof(d_servaddr);
-          d_client_socket = accept(d_socket, (struct sockaddr*)&d_servaddr, &addrlen);
-
-          if (d_client_socket < 0)
-          {
-            GR_LOG_ERROR(this->d_logger, "Could not accept incoming connection");
-            throw std::runtime_error("Could not accept incoming connection");
-          }
-
-          FD_SET(d_client_socket, &d_rset);
-          return true;
-        }
-        return false;
-      }
-    }
-
-    template <class T>
-    int difi_source_cpp_impl<T>::tcp_readall(int8_t* buf, int len)
-    {
-      int num_received = 0;
-      int num_to_read = len;
-
-      auto begin = std::chrono::high_resolution_clock::now();
-
-      while(num_received < len)
-      {
-        // select file descriptors that we want to monitor (socket client)
-        fd_set read_fds;
-        FD_ZERO(&read_fds);
-        FD_SET(d_client_socket,&read_fds);
-
-        struct timeval tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = 100000;
-        int status = select(d_client_socket+1, &read_fds, NULL, NULL, &tv);
-        if (status < 0)
-        {
-          // get the error code from the file descriptor
-          int error_code;
-          socklen_t len = sizeof(error_code);
-
-          getsockopt(d_client_socket, SOL_SOCKET, SO_ERROR, &error_code, &len);
-          GR_LOG_ERROR(this->d_logger, "Could not select client file descriptor -  (error code: " + std::to_string(error_code) + ")");
-          throw std::runtime_error("Could not select client file descriptor -  (error code: " + std::to_string(error_code) + ")");
-        }
-
-        // check if there is data in the socket buffer
-        if(FD_ISSET(d_client_socket, &read_fds))
-        {
-          int size_gotten = recv(d_client_socket,buf+num_received,num_to_read,MSG_WAITALL);
-
-          // when monitoring the file descriptor using 'select' and the fd is set, there should be
-          // bytes in the socket buffer. If the receive call returns 0 bytes then the connection has
-          // been lost and the client needs to re-connect
-          if(size_gotten <= 0)
-          {
-            reset_tcp_connection();
-            return 0;
-          }
-
-          num_to_read = len-num_received;
-          num_received += size_gotten;
-        }
-
-        auto end = std::chrono::high_resolution_clock::now();
-        auto time_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
-
-        if(time_elapsed.count() > d_tv.tv_usec)
-        {
-          if(num_received > 0 and num_received != len)
-          {
-            GR_LOG_WARN(this->d_logger, "Read timeout error - could not receive the expected number of bytes for a packet. Expected: "
-            + std::to_string(len) + " Received: " + std::to_string(num_received));
-          }
-          break;
-        }
-      }
-
-      return num_received;
     }
 
     template class difi_source_cpp<gr_complex>;

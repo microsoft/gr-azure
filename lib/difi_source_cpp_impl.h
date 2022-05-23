@@ -6,23 +6,22 @@
 #ifndef INCLUDED_AZURE_SOFTWARE_RADIO_difi_source_cpp_IMPL_H
 #define INCLUDED_AZURE_SOFTWARE_RADIO_difi_source_cpp_IMPL_H
 
-#include <azure_software_radio/difi_source_cpp.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <deque>
 #include <algorithm>
 #include <complex>
 #include <iostream>
 #include <deque>
 #include <iterator>
-#include <chrono>
 #include <pmt/pmt.h>
-#include <sys/time.h>
+
 #include <azure_software_radio/difi_common.h>
+#include <azure_software_radio/difi_source_cpp.h>
 
 namespace gr {
 namespace azure_software_radio {
 
+class tcp_server;
+class udp_socket;
 template <class T>
 class difi_source_cpp_impl : public difi_source_cpp<T>
 {
@@ -92,9 +91,7 @@ private:
       return M(re, imag);
     }
 
-    void create_udp_socket();
-    void create_tcp_socket();
-    void reset_tcp_connection();
+
     typedef enum
     {
         throw_exe = 0,
@@ -103,41 +100,32 @@ private:
         warnings_no_forward = 3
     }context_behavior;
 
-    int tcp_readall(int8_t* buf,int len);
-    bool is_tcp_socket_ready();
-    std::string d_ip_addr;
-    uint32_t d_port;
-    int d_stream_number;
-    int d_socket;
-    int d_client_socket;
-    uint8_t d_socket_type;
-    fd_set d_rset;
-    struct timeval d_tv;
-    std::vector<int8_t> d_packet_buffer;
-    struct sockaddr_in d_servaddr;
-    std::deque<char> d_deque;
-    std::chrono::time_point<std::chrono::high_resolution_clock> last;
-    long d_last_pkt_n = -1;
-    pmt::pmt_t d_context;
-    double d_timeout;
-    u_int32_t d_last_full;
-    u_int64_t d_last_frac;
-    int32_t d_static_bits;
     T (*d_unpacker)(int8_t *);
     void parse_header(header_data& data);
     pmt::pmt_t make_pkt_n_dict(int pkt_n, int size_gotten);
     void unpack_context(context_packet& context);
     void unpack_context_alt(context_packet& context);
-    u_int32_t d_unpack_idx_size;
     pmt::pmt_t make_context_dict(header_data& header, int size_gotten);
     int buffer_and_send(T* out, int noutput_items);
-    int recv_tcp_packet();
+
+    bool d_send;
+    u_int32_t d_last_full;
+    u_int64_t d_last_frac;
+    int32_t d_static_bits;
+    u_int32_t d_unpack_idx_size;
     int d_behavior;
-    bool d_send; 
+    int d_stream_number;
+    long d_last_pkt_n;
+    pmt::pmt_t d_context;
+    std::vector<int8_t> d_packet_buffer;
+    std::deque<char> d_deque;
+    tcp_server* p_tcpserver;
+    udp_socket* p_udpsocket;
 
 public:
     difi_source_cpp_impl(std::string ip_addr,
                     uint32_t port,
+                    uint8_t socket_type,
                     uint32_t stream_number,
                     int bit_depth,
                     int context_pkt_behavior);
