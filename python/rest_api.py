@@ -47,6 +47,7 @@ class RestApi(gr.basic_block):
             return read_status
 
         @app.put("/config")
+        @app.post("/config")
         def call_by_name(callbacks: dict):
             """
             Executes a callable/writable function in the top block
