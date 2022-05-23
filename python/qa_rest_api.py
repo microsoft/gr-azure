@@ -7,7 +7,6 @@
 # See License.txt in the project root for license information.
 #
 
-import ast
 import time
 
 from socket import socket
