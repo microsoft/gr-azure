@@ -6,7 +6,6 @@
 #ifndef INCLUDED_AZURE_SOFTWARE_RADIO_UDP_SOCKET_H
 #define INCLUDED_AZURE_SOFTWARE_RADIO_UDP_SOCKET_H
 
-#include <gnuradio/logger.h>
 #include <netinet/in.h>
 #include <string>
 
@@ -26,7 +25,6 @@ class udp_socket
     private:
         int d_socket;
         struct sockaddr_in d_servaddr;
-        gr::logger d_logger;
 };
 
 } // namespace azure_software_radio

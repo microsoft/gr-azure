@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
 
 #include "udp_socket.h"
 
@@ -17,8 +18,7 @@
 namespace gr {
 namespace azure_software_radio {
 
-    udp_socket::udp_socket(std::string ipaddr, uint32_t port, bool isServer, uint32_t sock_buffer_size):
-        d_logger("azure_software_radio_udp_conn")
+    udp_socket::udp_socket(std::string ipaddr, uint32_t port, bool isServer, uint32_t sock_buffer_size)
     {
 
         struct timeval tv;
@@ -36,21 +36,18 @@ namespace azure_software_radio {
 
         if ((d_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         {
-            d_logger.error("Could not make UDP socket, socket may be in use.");
             std::cerr << "Could not make UDP socket, socket may be in use." << std::endl;
             throw std::runtime_error("Could not make UDP socket");
         }
 
         if(setsockopt(d_socket, SOL_SOCKET, SO_RCVBUF, &sock_buffer_size, sizeof(sock_buffer_size)) < 0)
         {
-            d_logger.error("Could not set socket size");
             std::cerr << "Could not set socket size" << std::endl;
             throw std::runtime_error("Could not set socket size");
         }
 
         if (setsockopt(d_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
         {
-            d_logger.error("Could not set timeout on socket");
             std::cerr << "Could not set timeout on socket" << std::endl;
             throw std::runtime_error("Could not set timeout on socket");
         }
@@ -60,7 +57,6 @@ namespace azure_software_radio {
             if (bind(d_socket, (const struct sockaddr *)&d_servaddr,
                     sizeof(d_servaddr)) < 0)
             {
-                d_logger.error("Could not connect to port, port may be in use");
                 std::cerr << "Could not connect to port, port may be in use" << std::endl;
                 throw std::runtime_error("Could not connect to port");
             }
@@ -84,7 +80,6 @@ namespace azure_software_radio {
         int num_bytes_sent = sendto(d_socket, buf, sz, 0, (const struct sockaddr *) &d_servaddr, sizeof(d_servaddr));
         if(num_bytes_sent != sz)
         {
-            d_logger.error("Send failed to send msg on socket correctly");
             std::cerr << "Send failed to send msg on socket correctly" << std::endl;
             throw std::runtime_error("Send failed to send msg on socket correctly");
         }

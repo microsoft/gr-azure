@@ -175,11 +175,8 @@ namespace gr {
           bool res = p_tcpsocket->connect();
           if(!res)
           {
-            //sleep(1);
             return 0;
           }
-          else
-            GR_LOG_WARN(this->d_logger, "TCP Client connected!");
         }
       }
 

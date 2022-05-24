@@ -6,7 +6,6 @@
 #ifndef INCLUDED_AZURE_SOFTWARE_RADIO_TCP_SERVER_H
 #define INCLUDED_AZURE_SOFTWARE_RADIO_TCP_SERVER_H
 
-#include <gnuradio/logger.h>
 #include <string>
 #include <netinet/in.h>
 
@@ -37,7 +36,6 @@ class tcp_server
         int d_listener;
         int d_client;
         struct sockaddr_in d_servaddr;
-        gr::logger d_logger;
 };
 
 } // namespace azure_software_radio

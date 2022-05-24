@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
 
 #include "tcp_server.h"
 
@@ -23,10 +24,8 @@ namespace gr {
 
       tcp_server::tcp_server(std::string ip_addr, uint32_t port):
         d_listener(INVALID_SOCKET),
-        d_client(INVALID_SOCKET),
-        d_logger("azure_software_radio_tcp_server")
+        d_client(INVALID_SOCKET)
       {
-        d_logger.set_level("DEBUG");
         memset(&d_servaddr, 0, sizeof(d_servaddr));
         d_servaddr.sin_family = AF_INET;
         d_servaddr.sin_port = htons(port);
@@ -34,7 +33,6 @@ namespace gr {
 
         if ((d_listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         {
-          d_logger.error("Could not make TCP socket, socket may be in use.");
           std::cerr << "Could not make TCP socket, socket may be in use." << std::endl;
           throw std::runtime_error("Could not make TCP socket");
         }
@@ -42,7 +40,6 @@ namespace gr {
         int enable;
         if (setsockopt(d_listener, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &enable, sizeof(int)) < 0)
         {
-          d_logger.error("setsockopt(SO_REUSEADDR) failed.");
           std::cerr << "setsockopt(SO_REUSEADDR) failed." << std::endl;
           throw std::runtime_error("setsockopt(SO_REUSEADDR) failed.");
         }
@@ -50,7 +47,6 @@ namespace gr {
         enable = 1;
         if(ioctl(d_listener, FIONBIO, (char *)&enable) < 0)
         {
-          d_logger.error("ioctl(FIONBIO) failed.");
           std::cerr << "ioctl(FIONBIO) failed." << std::endl;
           throw std::runtime_error("ioctl(FIONBIO) failed.");
         }
@@ -58,14 +54,12 @@ namespace gr {
         if (bind(d_listener, (const struct sockaddr *)&d_servaddr,
                 sizeof(d_servaddr)) < 0)
         {
-          d_logger.error("Could not bind port, port may be in use.");
           std::cerr << "Could not bind port, port may be in use." << std::endl;
           throw std::runtime_error("Could not bind port, port may be in use.");
         }
 
         if(listen(d_listener, 1) < 0)
         {
-          d_logger.error("Error while listening to incoming connections.");
           std::cerr << "Error while listening to incoming connections." << std::endl;
           throw std::runtime_error("Error while listening to incoming connections.");
         }
@@ -129,7 +123,6 @@ namespace gr {
 
         if(rc < 0)
         {
-          d_logger.error("Failed to poll listener.");
           std::cerr << "Failed to poll listener." << std::endl;
         }
         else if(rc > 0) // zero means the poller timed out and there are no events in the socket
@@ -138,12 +131,10 @@ namespace gr {
           {
             socklen_t addrlen = sizeof(d_servaddr);
             d_client = accept(d_listener, (struct sockaddr*)&d_servaddr, &addrlen);
-            d_logger.debug("Client connection has been accepted!");
             std::cout << "Client connection has been accepted!" << std::endl;
           }
           else
           {
-            d_logger.error("An unexpected poller revent result.");
             std::cerr << "An unexpected poller revent result." << std::endl;
           }
         }
@@ -160,7 +151,6 @@ namespace gr {
 
         if(rc < 0)
         {
-          d_logger.error("Failed to poll client.");
           std::cerr << "Failed to poll client." << std::endl;
         }
         else if(rc > 0)
@@ -171,7 +161,6 @@ namespace gr {
           }
           else
           {
-            d_logger.error("An unexpected poller revent result.");
             std::cerr << "An unexpected poller revent result." << std::endl;
           }
         }
@@ -180,7 +169,6 @@ namespace gr {
 
       void tcp_server::reset_client_conn()
       {
-        d_logger.warn("Client connection has been closed.");
         std::wcerr << "Client connection has been closed." << std::endl;
         shutdown(d_client, SHUT_RDWR);
         close(d_client);
@@ -195,7 +183,6 @@ namespace gr {
         int available = 0;
         if(ioctl(d_client, FIONREAD, &available) < 0)
         {
-          d_logger.error("ioctl(client, FIONREAD) failed.");
           std::cerr << "ioctl(client, FIONREAD) failed." << std::endl;
           throw std::runtime_error("ioctl(client, FIONREAD) failed.");
         }
