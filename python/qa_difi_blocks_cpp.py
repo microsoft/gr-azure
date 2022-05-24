@@ -120,17 +120,6 @@ class qa_testcpp(gr_unittest.TestCase):
     def tearDown(self):
         pass
 
-    """
-    def test_tcp_paired(self):
-        tb = gr.top_block()
-        vita_source = difi_source_cpp_fc32(
-            '127.0.0.1', int(53e3), socket.SOCK_STREAM, 0, 8, 0)
-
-        null_sink = blocks.null_sink(8)
-        tb.connect(vita_source, null_sink)
-        tb.run()
-    """
-
     def test_vita_source_sink_full_loop(self):
         source_p, sink_p = get_open_ports()
         tb = gr.top_block()
