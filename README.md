@@ -15,7 +15,7 @@ For information on our GNU Radio developer VM available in Azure, see [this guid
 - [Examples](#examples)
 - [Blocks Documentation](#azure-software-radio-out-of-tree-module-blocks)
   - [Key Vault Block](#key-vault-block)
-  - [Blob Blocks](#blob-blocks)
+  - [Blob (incl. SigMF) Blocks](#blob-blocks)
   - [Event Hub Blocks](#event-hub-blocks)
   - [DIFI Blocks using the IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard](#difi-blocks-using-the-ieee-isto-std-4900-2021-digital-if-interoperability-standard)
   - [REST API Block](#rest-api-block)
@@ -110,13 +110,14 @@ For a brief tutorial on using this block, see the [Key Vault Example](./examples
 
 ### Blob Blocks
 The two Blob blocks (source and sink) provide an interface to read and write samples to [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction) in GNU Radio.
+Note that the SigMF Blob Source/Sink are simply wrappers around the regular Blob Source/Sink with SigMF mode set to True.
 It is expected that the user will setup a storage account and a container prior to accessing Blob storage with the Blob source and sink blocks. To create a storage account, see [Create Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal).
 
- * __Blob Source Block__\
-	The Blob source block reads samples from Azure Blob storage. This block currently supports block blobs and the following outputs: Complex float32, Complex int16, Complex int8, float, int, short and byte (Page blobs and append blobs are not supported at this time).
+ * __Blob Source Block & SigMF Blob Source Block__\
+	The Blob source block reads samples from Azure Blob storage. This block currently supports block blobs and the following outputs: complex, float, int, short and byte (Page blobs and append blobs are not supported at this time).
 
- * __Blob Sink Block__\
-	The Blob sink block writes samples to Azure Blob storage. This block currently supports block blobs and the following inputs:  Complex float32, Complex int16, Complex int8, float, int, short and byte (Page blobs and append blobs are not supported at this time).
+ * __Blob Sink Block & SigMF Blob Sink Block__\
+	The Blob sink block writes samples to Azure Blob storage. This block currently supports block blobs and the following inputs:  complex, float, int, short and byte (Page blobs and append blobs are not supported at this time).
 
 There are several ways to authenticate to the Azure blob backend, these blocks support authentication using a connection string, a URL with an embedded SAS token, or use credentials supported by the DefaultAzureCredential class.
 
