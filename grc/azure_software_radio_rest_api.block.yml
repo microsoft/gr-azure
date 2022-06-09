@@ -30,8 +30,9 @@ documentation: |
     Creates REST endpoints to get flowgraph status, get/set variables (by triggering their callbacks).
 
         The following routes are supported (no authentication is used):
-            - GET http://hostname:<port>/status
-            - PUT http://hostname:<port>/config
+            - GET  http://hostname:<port>/status
+            - PUT  http://hostname:<port>/config
+            - POST http://hostname:<port>/config (functionally equivalent to the above)
 
     Args:
         Port: The desired server listening port.
