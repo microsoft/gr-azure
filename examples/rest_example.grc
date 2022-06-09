@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: REST Configurable Signal Generator
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -68,20 +69,20 @@ blocks:
     coordinate: [456, 12.0]
     rotation: 0
     state: enabled
-- name: rest_api_0
+- name: rest_api_1
   id: rest_api
   parameters:
     alias: ''
     comment: ''
     port: '8000'
-    readable: '[''samp_rate'', ''freq'', ''amplitude'', ''phase'']'
+    readable: '[''freq'', ''amplitude'', ''phase'']'
     value: '0'
-    writable: '[''set_freq'', ''set_amplitude'']'
+    writable: '[''freq'', ''amplitude'', ''phase'']'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 116.0]
+    coordinate: [88, 140.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -141,16 +142,16 @@ blocks:
   id: note
   parameters:
     alias: ''
-    comment: ''
-    note: 'This flowgraph settings can be read and updated using the REST endpoint.
-      Read the flowgraph settings using curl -X GET http://<IP>:8000/status. To update
-      the writable settings use curl -X PUT http://<IP>:8000/call -H ''Content-Type:
-      application/json'' -d ''{"set_amplitude":2, "set_freq":2e3}'' '
+    comment: "This flowgraph settings can be read and updated using the REST endpoint.\n\
+      Read the flowgraph settings using:\n   curl -X GET http://127.0.0.1:8000/status\n\
+      To update the writable settings use\n   curl -X PUT http://127.0.0.1:8000/config\
+      \ -H 'Content-Type: application/json' -d '{\"amplitude\":2, \"freq\":2e3}'"
+    note: ''
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 212.0]
+    coordinate: [544, 28.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
