@@ -27,10 +27,10 @@ parameters:
 - id: type
   label: Output Type
   dtype: enum
-  options: [                 fc32,          sc16,          sc8,        f32,      s32,      s16,       s8]
-  option_labels: [Complex float32, Complex int16, Complex int8,      float,      int,    short,     byte]
+  options: [            fc32,        f32,      s32,      s16,       s8]
+  option_labels: [   complex,      float,      int,    short,     byte]
   option_attributes:
-      np_type: [     np.complex64,      np.int32,     np.int16, np.float32, np.int32, np.int16, np.ubyte]
+      np_type: [np.complex64, np.float32, np.int32, np.int16, np.ubyte]
   hide: part
 - id: vlen
   label: Vector Length

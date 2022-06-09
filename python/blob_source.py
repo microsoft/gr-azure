@@ -29,8 +29,7 @@ class BlobSource(gr.sync_block):
     supported by the DefaultAzureCredential class, such as environment variables, a
     managed identity, the az login command, etc.
 
-    This block currently only supports complex64 inputs and has only been tested with block blobs.
-    Page blobs and append blobs are not supported.
+    This block works with block blobs (page blobs and append blobs are not supported).
 
     Args:
     Output Type: Data type of the sample stream
