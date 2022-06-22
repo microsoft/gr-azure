@@ -1,0 +1,11 @@
+PUT http://127.0.0.1:8000/config HTTP/1.1
+content-type: application/json
+
+{
+    "freq": 100
+}
+
+###
+
+GET http://127.0.0.1:8000/status HTTP/1.1
+content-type: application/json

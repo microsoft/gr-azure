@@ -126,7 +126,7 @@ public:
     difi_source_cpp_impl(std::string ip_addr,
                     uint32_t port,
                     uint8_t socket_type,
-                    uint32_t stream_number,
+                    int stream_number,
                     int bit_depth,
                     int context_pkt_behavior);
     ~difi_source_cpp_impl();

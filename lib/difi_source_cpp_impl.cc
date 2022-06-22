@@ -45,13 +45,13 @@ namespace gr {
     }
 
     template <class T>
-    typename difi_source_cpp<T>::sptr difi_source_cpp<T>::make(std::string ip_addr, uint32_t port, uint8_t socket_type, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
+    typename difi_source_cpp<T>::sptr difi_source_cpp<T>::make(std::string ip_addr, uint32_t port, uint8_t socket_type, int stream_number, int bit_depth, int context_pkt_behavior)
     {
       return gnuradio::make_block_sptr<difi_source_cpp_impl<T>>(ip_addr, port, socket_type, stream_number, bit_depth, context_pkt_behavior);
     }
 
     template <class T>
-    difi_source_cpp_impl<T>::difi_source_cpp_impl(std::string ip_addr, uint32_t port, uint8_t socket_type, uint32_t stream_number, int bit_depth, int context_pkt_behavior)
+    difi_source_cpp_impl<T>::difi_source_cpp_impl(std::string ip_addr, uint32_t port, uint8_t socket_type, int stream_number, int bit_depth, int context_pkt_behavior)
         : gr::sync_block("source_cpp", gr::io_signature::make(0, 0, 0),
                          gr::io_signature::make(1 /* min outputs */,
                                                 1 /*max outputs */,

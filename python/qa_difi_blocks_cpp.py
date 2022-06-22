@@ -143,6 +143,29 @@ class qa_testcpp(gr_unittest.TestCase):
         if rec_proc.exitcode != 0:
             pytest.fail()
 
+    def test_stream_id_neg_one(self):
+        source_p, sink_p = get_open_ports()
+        tb = gr.top_block()
+        vita_source = difi_source_cpp_fc32(
+            '127.0.0.1', source_p, -1, 8, 0)
+        vita_sink = difi_sink_cpp_fc32(0, 0, '127.0.0.1', sink_p,
+                                       True, SAMPS_PER_PACKET, 0, 352, int(1e6), 0, 0, 100, 72, 8, 0, 0, 0, 0, 0)
+        tb.connect(vita_source, vita_sink)
+
+        send_proc = Process(target=socket_send, args=(
+            ('127.0.0.1', source_p), self.vita_data))
+        rec_proc = Process(target=socket_rec, args=(
+            ('127.0.0.1', sink_p), self.vita_data))
+        tb_proc = Process(target=run_tb, args=(tb,))
+        tb_proc.start()
+        rec_proc.start()
+        send_proc.start()
+        send_proc.join()
+        rec_proc.join()
+        tb_proc.kill()
+        if rec_proc.exitcode != 0:
+            pytest.fail()
+
     def test_timing_basic(self):
         source_p, sink_p = get_open_ports()
         tb = gr.top_block()

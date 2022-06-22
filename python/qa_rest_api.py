@@ -7,7 +7,6 @@
 # See License.txt in the project root for license information.
 #
 
-import ast
 import time
 
 from socket import socket
@@ -30,11 +29,11 @@ class QaRestApi(gr_unittest.TestCase):
         instance = RestApi(self, port)
         self.assertIsNotNone(instance)
 
-    def update_var(self, val):
-        self.val = val
+    def set_var1(self, val):
+        self.var1 = val
 
-    def update_var1(self, val):
-        self.val1 = val
+    def set_var2(self, val):
+        self.var2 = val
 
     def test_get_status(self):
         self.check_var1 = 1
@@ -53,89 +52,31 @@ class QaRestApi(gr_unittest.TestCase):
             self.assertEqual(check_str in dict_str, True)
         self.assertEqual('fake_var' in dict_str, False)
 
-    def test_get_config(self):
-        self.pi_val = 3.14
-        self.pi_copy = self.pi_val
+    def test_config_by_name(self):
+        self.var1 = None
+        self.var2 = None
         port = self.get_free_port()
-        instance = RestApi(self, port, write_settings=['pi_val'])
+        instance = RestApi(self, port, write_settings=['var1', 'var2'])
         # give server a second to startup
         time.sleep(1)
+        self.var1 = 0
+        self.var2 = 0
         addr_str = 'http://127.0.0.1:' + str(port) + '/config'
-        resp = httpx.Client().get(addr_str)
+        resp = httpx.Client().put(addr_str, json={"var1": 3.14, "var2": 5.0})
         self.assertIsNotNone(resp)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        dict_str = resp.content.decode("UTF-8")
-        res_dict = ast.literal_eval(dict_str)
-        self.assertEqual(res_dict['pi_val'], self.pi_val)
-        self.assertEqual('pi_copy' in dict_str, False)
+        self.assertEqual(self.var1, 3.14)
+        self.assertEqual(self.var2, 5.0)
 
-    def test_put_config(self):
-        self.pi_val = 0
-        self.test_int = 1
+    def test_bad_config_by_name(self):
+        self.var1 = None
         port = self.get_free_port()
-        instance = RestApi(self, port, read_settings=['pi_val', 'test_int'], write_settings=['pi_val'])
+        instance = RestApi(self, port, write_settings=['var1'])
         # give server a second to startup
         time.sleep(1)
+        self.var1 = 0
         addr_str = 'http://127.0.0.1:' + str(port) + '/config'
-        resp = httpx.Client().put(addr_str, json={"pi_val": 3.14})
-        self.assertIsNotNone(resp)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        dict_str = resp.content.decode("UTF-8")
-        res_dict = ast.literal_eval(dict_str)
-        self.assertEqual(res_dict['pi_val'], 3.14)
-
-    def test_call_by_name(self):
-        self.val = None
-        port = self.get_free_port()
-        instance = RestApi(self, port, write_settings=['update_var', 'update_var1'])
-        # give server a second to startup
-        time.sleep(1)
-        self.val = 0
-        self.val1 = 0
-        addr_str = 'http://127.0.0.1:' + str(port) + '/call'
-        resp = httpx.Client().put(addr_str, json={"update_var": 3.14, "update_var1": 5.0})
-        self.assertIsNotNone(resp)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.val, 3.14)
-        self.assertEqual(self.val1, 5.0)
-
-    def test_unauthorized_put_config(self):
-        self.pi_val = 0
-        port = self.get_free_port()
-        instance = RestApi(self, port, read_settings=['pi_val'])
-        # give server a second to startup
-        time.sleep(1)
-        addr_str = 'http://127.0.0.1:' + str(port) + '/config'
-        with httpx.Client() as client:
-            resp = client.put(addr_str, json={"pi_val": 3.14})
-            self.assertIsNotNone(resp)
-            self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
-            dict_str = resp.content.decode("UTF-8")
-            self.assertEqual('pi_val' in dict_str, False)
-
-    def test_bad_put_config(self):
-        self.pi_val = 0
-        port = self.get_free_port()
-        instance = RestApi(self, port, read_settings=['pi_val'], write_settings=['pi_val'])
-        # give server a second to startup
-        time.sleep(1)
-        addr_str = 'http://127.0.0.1:' + str(port) + '/config'
-        with httpx.Client() as client:
-            resp = client.put(addr_str, json={"fake_val": 0})
-            self.assertIsNotNone(resp)
-            self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-            dict_str = resp.content.decode("UTF-8")
-            self.assertEqual('Error' in dict_str, True)
-
-    def test_bad_call_by_name(self):
-        self.val = None
-        port = self.get_free_port()
-        instance = RestApi(self, port, write_settings=['update_var'])
-        # give server a second to startup
-        time.sleep(1)
-        self.val = 0
-        addr_str = 'http://127.0.0.1:' + str(port) + '/call'
-        resp = httpx.Client().put(addr_str, json={"update_var2":3.14})
+        resp = httpx.Client().put(addr_str, json={"var2":3.14}) # request a var/param that wasnt exposed
         self.assertIsNotNone(resp)
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 

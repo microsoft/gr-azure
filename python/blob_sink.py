@@ -98,15 +98,15 @@ class BlobSink(gr.sync_block):
         if sigmf:
             meta_blob_client = self.blob_service_client.get_blob_client(container=container_name,
                                                                         blob=blob_name + '.sigmf-meta')
-            if np_dtype == np.complex64:
+            if np_dtype == np.complex64: # complex
                 datatype_str = 'cf32_le'
-            elif np_dtype == np.float32:
+            elif np_dtype == np.float32: # float
                 datatype_str = 'rf32_le'
-            elif np_dtype == np.int32: # See https://github.com/microsoft/azure-software-radio/issues/67
-                datatype_str = 'ci16_le'
-            elif np_dtype == np.int16:
+            elif np_dtype == np.int32: # int
+                datatype_str = 'ri32_le'
+            elif np_dtype == np.int16: # short
                 datatype_str = 'ri16_le'
-            elif np_dtype == np.ubyte:
+            elif np_dtype == np.ubyte: # byte
                 datatype_str = 'ru8'
             else:
                 raise ValueError
