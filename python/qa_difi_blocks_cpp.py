@@ -153,9 +153,9 @@ class qa_testcpp(gr_unittest.TestCase):
         tb.connect(vita_source, vita_sink)
 
         send_proc = Process(target=socket_send, args=(
-            ('127.0.0.1', source_p), self.vita_data))
+            ('127.0.0.1', source_p), socket.SOCK_DGRAM, self.vita_data))
         rec_proc = Process(target=socket_rec, args=(
-            ('127.0.0.1', sink_p), self.vita_data))
+            ('127.0.0.1', sink_p), socket.SOCK_DGRAM, self.vita_data))
         tb_proc = Process(target=run_tb, args=(tb,))
         tb_proc.start()
         rec_proc.start()
