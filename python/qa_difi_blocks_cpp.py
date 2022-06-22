@@ -147,8 +147,8 @@ class qa_testcpp(gr_unittest.TestCase):
         source_p, sink_p = get_open_ports()
         tb = gr.top_block()
         vita_source = difi_source_cpp_fc32(
-            '127.0.0.1', source_p, -1, 8, 0)
-        vita_sink = difi_sink_cpp_fc32(0, 0, '127.0.0.1', sink_p,
+            '127.0.0.1', source_p, socket.SOCK_DGRAM, -1, 8, 0)
+        vita_sink = difi_sink_cpp_fc32(0, 0, '127.0.0.1', sink_p, socket.SOCK_DGRAM,
                                        True, SAMPS_PER_PACKET, 0, 352, int(1e6), 0, 0, 100, 72, 8, 0, 0, 0, 0, 0)
         tb.connect(vita_source, vita_sink)
 
