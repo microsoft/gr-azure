@@ -12,8 +12,10 @@ parameters:
     default: 8000
 -   id: readable
     dtype: raw
+    default: ['samp_rate']
 -   id: writable
     dtype: raw
+    default: ['samp_rate']
 
 value: ${value}
 templates:
@@ -25,26 +27,27 @@ templates:
 
 documentation: |
 
-    Creates REST endpoints to get flowgrpah status, get/set variables, and trigger callbacks.
+    Creates REST endpoints to get flowgraph status, get/set variables (by triggering their callbacks).
 
         The following routes are supported (no authentication is used):
-            - GET http://hostname:<port>/status
-            - GET http://hostname:<port>/config
-            - PUT http://hostname:<port>/config
-            - PUT http://hostname:<port>/call
+            - GET  http://hostname:<port>/status
+            - PUT  http://hostname:<port>/config
+            - POST http://hostname:<port>/config (functionally equivalent to the above)
 
     Args:
         Port: The desired server listening port.
-        Read Only Settings: List of allowable read-only settings (variables) in the top block.
-        Write Only Settings: List of allowable write-only settings (variables and/or callbacks) in the top block.
+        Read Only Settings: List of allowable read-only settings (variables/params) in top block.
+        Write Only Settings: List of allowable write-only settings (variables/params callbacks) in top block.
 
     Example:
-        Port: 8080
+        Port: 8000
         Read Only Settings: ['samp_rate', 'freq']
         Write Only Settings: ['freq']
 
-        curl -X GET http://<IP>:8080/status
+        The above would start a server at port 8000 and expose the sample rate and freq in the top block as a readable status, and freq as writable.
+        You could then use the following REST calls to get the values and set freq
 
-        The above would start a server at port 8080 and expose the sample rate in the top block as a readable status.
+        curl -X GET http://127.0.0.1:8000/status
+        curl -X PUT http://127.0.0.1:8000/config -H 'Content-Type: application/json' -d '{"amplitude":2, "freq":2e3}'
 
 file_format: 1

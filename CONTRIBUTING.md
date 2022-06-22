@@ -7,5 +7,6 @@ Please visit the following links to find out more about how to contribute to Azu
 - [Contributor License Agreement](https://cla.opensource.microsoft.com/)
 - [Microsoft Open Source Program](https://opensource.microsoft.com/program/)
 - [Collaborate](https://opensource.microsoft.com/collaborate/)
+- [Security](https://github.com/microsoft/Microsoft.Unity.Analyzers/blob/main/SECURITY.md)
 
 Once you have read the information on the above links and signed the CLA (Contributor License Agreement), you may open a pull request against the repo. It is recommended that one first open an issue to see if the contribution aligns with the project goals, as any contribution will need to be supported and maintained by Microsoft going forward.

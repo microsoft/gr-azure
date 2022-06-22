@@ -2,7 +2,9 @@
 
 The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure cloud resources from within a GNU Radio flowgraph. You can use this OOT module with your existing GNU Radio development environment, or within a VM in the cloud.  Example use-cases involve storing and retrieving RF recordings from Blob (file) storage, communicating with [DIFI](https://dificonsortium.org/about/) devices from within GNU Radio, or creating complex cloud applications using Azure Event Hubs as a bridge between your flowgraph and [Azure services](https://azure.microsoft.com/en-us/services/).  We are excited to see what can be created by combining GNU Radio with the power and scalability of the cloud!
 
-<center><img src="images/example_flowgraph.png"></center>
+For information on our GNU Radio developer VM available in Azure, see [this guide](docs/devvm.md).  We also have a [set of tutorials](docs/tutorials.md) that use the developer VM and gr-azure.
+
+<center><img src="docs/images/example_flowgraph.png"></center>
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -13,7 +15,7 @@ The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure clou
 - [Examples](#examples)
 - [Blocks Documentation](#azure-software-radio-out-of-tree-module-blocks)
   - [Key Vault Block](#key-vault-block)
-  - [Blob Blocks](#blob-blocks)
+  - [Blob (incl. SigMF) Blocks](#blob-blocks)
   - [Event Hub Blocks](#event-hub-blocks)
   - [DIFI Blocks using the IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard](#difi-blocks-using-the-ieee-isto-std-4900-2021-digital-if-interoperability-standard)
   - [REST API Block](#rest-api-block)
@@ -34,12 +36,12 @@ so you may need to separately install and configure some of them. The Azure soft
 
 - GNU Radio 3.9.x or 3.10.x
 - Python 3.8 or greater
-- python3-pip
 - cmake
 - liborc-dev
 - doxygen
 - pytest
 - pybind11
+- Additional Python packages are listed in python/requirements.txt
 
 See the installation steps below for how to install these dependencies.
 
@@ -108,15 +110,18 @@ For a brief tutorial on using this block, see the [Key Vault Example](./examples
 
 ### Blob Blocks
 The two Blob blocks (source and sink) provide an interface to read and write samples to [Azure Blob storage](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction) in GNU Radio.
+Note that the SigMF Blob Source/Sink are simply wrappers around the regular Blob Source/Sink with SigMF mode set to True.
 It is expected that the user will setup a storage account and a container prior to accessing Blob storage with the Blob source and sink blocks. To create a storage account, see [Create Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal).
 
- * __Blob Source Block__\
-	The Blob source block reads samples from Azure Blob storage. This block currently supports block blobs and the following outputs: Complex float32, Complex int16, Complex int8, float, int, short and byte (Page blobs and append blobs are not supported at this time).
+ * __Blob Source Block & SigMF Blob Source Block__\
+	The Blob source block reads samples from Azure Blob storage. This block currently supports block blobs and the following outputs: complex, float, int, short and byte (Page blobs and append blobs are not supported at this time).
 
- * __Blob Sink Block__\
-	The Blob sink block writes samples to Azure Blob storage. This block currently supports block blobs and the following inputs:  Complex float32, Complex int16, Complex int8, float, int, short and byte (Page blobs and append blobs are not supported at this time).
+ * __Blob Sink Block & SigMF Blob Sink Block__\
+	The Blob sink block writes samples to Azure Blob storage. This block currently supports block blobs and the following inputs:  complex, float, int, short and byte (Page blobs and append blobs are not supported at this time).
 
 There are several ways to authenticate to the Azure blob backend, these blocks support authentication using a connection string, a URL with an embedded SAS token, or use credentials supported by the DefaultAzureCredential class.
+
+To determine the max speed at which samples can be downloaded or uploaded to/from Blob storage, for different Azure regions, run https://www.azurespeed.com/Azure/Download or https://www.azurespeed.com/Azure/Upload on the VM or machine running GNU Radio.
 
 For a brief tutorial on using these blocks, see the [Blob Examples](./examples/README.md#Blob-Source-and-Sink-Examples).
 
