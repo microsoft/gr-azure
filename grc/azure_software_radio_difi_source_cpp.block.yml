@@ -8,7 +8,7 @@ label: DIFI Source
 category: '[Azure software radio]'
 templates:
   imports: import azure_software_radio
-  make: azure_software_radio.difi_source_cpp_${type.fcn}(${ip_addr}, ${port}, ${stream_num}, int(${bit_depth}), int(${context_behavior}))
+  make: azure_software_radio.difi_source_cpp_${type.fcn}(${ip_addr}, ${port}, ${protocol}, ${stream_num}, int(${bit_depth}), int(${context_behavior}))
 
 parameters:
 - id: type
@@ -30,6 +30,12 @@ parameters:
 - id: port
   label: Port
   dtype: int
+- id: protocol
+  label: Protocol
+  dtype: enum
+  default: '2'
+  options: ['1', '2']
+  option_labels: ['TCP', 'UDP']
 - id: stream_num
   label: DIFI Stream Number
   dtype: int
@@ -50,7 +56,7 @@ asserts:
 documentation: |-
      A DIFI source block is based on IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard
      The block is not fully compliant just yet. Bit Depths supported are currently 8 and 16 with full support coming at a later date.
-     
+
      This block will emit the following tags in the following situations-
      pck_n tag:
      Emitted when a missed packet occurs, will update the upstream blocks with the current packet number to expect and the current time stamps
@@ -60,31 +66,34 @@ documentation: |-
      Emitted when the static parts of the DIFI context packet changes
 
      DIFI Advanced:
-     This tab contains more advanced settings for the DIFI block and should be used by users who know the devices and network in use. 
+     This tab contains more advanced settings for the DIFI block and should be used by users who know the devices and network in use.
 
      Context Packet Mismatch Behavior:
        - Default: Throws exceptions if context packet is incorrect or non-compliant
        - Ignore Mismatches - Forward data, no warnings: Entirely ignore the context packet, only forwards data
-       - Throw Warnings - Forward: Displays Warnings about context packet mismatch or non-compliant context packets, but still forward DIFI data. 
+       - Throw Warnings - Forward: Displays Warnings about context packet mismatch or non-compliant context packets, but still forward DIFI data.
        - Throw Warnings - No Forward: Displays Warnings about context packet mismatch or non-compliant context packets, but won't forward data until a correct context packet is received or one that matches the given settings
-    
+
      ===Params===
-     
+
      ip_addr:
      The ip address for the socket to expect DIFI packets from
-     
+
      port:
      the port number for the socket
-     
+
+     protocol:
+     The socket protocol to use UDP or TCP
+
      stream_number:
      The DIFI (VITA) stream number to expect for this stream. If stream number is -1, the stream number will be ignored, else it will be checked against the stream number in the DIFI (VITA) packets and if they do not match the packets will be dropped.
      
      bit_depth:
      The bit depth
-     
-     context_pkt_behavior:
-     Set the behavior of handling non-compliant context packets. 
 
-   
+     context_pkt_behavior:
+     Set the behavior of handling non-compliant context packets.
+
+
 file_format: 1
 

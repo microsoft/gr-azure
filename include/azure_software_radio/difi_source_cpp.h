@@ -19,7 +19,7 @@ namespace gr {
      public:
       typedef std::shared_ptr<difi_source_cpp<T>> sptr;
 
-    static sptr make(std::string ip_addr, uint32_t port, int stream_number, int bit_depth, int context_pkt_behavior);
+      static sptr make(std::string ip_addr, uint32_t port, uint8_t socket_type, int stream_number, int bit_depth, int context_pkt_behavior);
 
     };
     typedef difi_source_cpp<gr_complex> difi_source_cpp_fc32;
