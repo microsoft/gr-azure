@@ -19,6 +19,6 @@ stable_release: HEAD
 
 The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure cloud resources from within a GNU Radio flowgraph.
 You can use this OOT module with your existing GNU Radio development environment, or within a VM in the cloud.
-Example use-cases involve storing and retrieving RF recordings from Blob (file) storage, communicating with DIFI devices from within GNU Radio,
+Example use-cases involve storing and retrieving RF recordings from Blob (file) storage
 or creating complex cloud applications using Azure Event Hubs as a bridge between your flowgraph and Azure services.
 We are excited to see what can be created by combining GNU Radio with the power and scalability of the cloud!
