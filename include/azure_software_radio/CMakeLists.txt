@@ -10,7 +10,5 @@
 # Install public header files
 ########################################################################
 install(FILES
-    api.h
-    difi_source_cpp.h
-    difi_sink_cpp.h DESTINATION include/azure_software_radio
+    api.h DESTINATION include/azure_software_radio
 )

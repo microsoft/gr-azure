@@ -1,6 +1,6 @@
 # Azure software radio Out of Tree Module
 
-The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure cloud resources from within a GNU Radio flowgraph. You can use this OOT module with your existing GNU Radio development environment, or within a VM in the cloud.  Example use-cases involve storing and retrieving RF recordings from Blob (file) storage, communicating with [DIFI](https://dificonsortium.org/about/) devices from within GNU Radio, or creating complex cloud applications using Azure Event Hubs as a bridge between your flowgraph and [Azure services](https://azure.microsoft.com/en-us/services/).  We are excited to see what can be created by combining GNU Radio with the power and scalability of the cloud!
+The gr-azure Out of Tree (OOT) Module allows users to easily leverage Azure cloud resources from within a GNU Radio flowgraph. You can use this OOT module with your existing GNU Radio development environment, or within a VM in the cloud.  Example use-cases involve storing and retrieving RF recordings from Blob (file) storage or creating complex cloud applications using Azure Event Hubs as a bridge between your flowgraph and [Azure services](https://azure.microsoft.com/en-us/services/).  We are excited to see what can be created by combining GNU Radio with the power and scalability of the cloud!
 
 For information on our GNU Radio developer VM available in Azure, see [this guide](docs/devvm.md).  We also have a [set of tutorials](docs/tutorials.md) that use the developer VM and gr-azure.
 
@@ -17,7 +17,6 @@ For information on our GNU Radio developer VM available in Azure, see [this guid
   - [Key Vault Block](#key-vault-block)
   - [Blob (incl. SigMF) Blocks](#blob-blocks)
   - [Event Hub Blocks](#event-hub-blocks)
-  - [DIFI Blocks using the IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard](#difi-blocks-using-the-ieee-isto-std-4900-2021-digital-if-interoperability-standard)
   - [REST API Block](#rest-api-block)
 - [Frequently Asked Questions](#frequently-asked-questions)
 - [Support](#support)
@@ -138,40 +137,6 @@ It is expected that the user will create an Event Hubs namespace, Event Hub enti
 These blocks support multiple ways to authenticate to the Azure Event Hub backend, such as using a connection string, a SAS token, or use credentials supported by the DefaultAzureCredential class.
 
 For a brief tutorial on using these blocks, see the [Event Hub Examples](./examples/README.md#Event-Hub-Examples).
-
-### DIFI Blocks Using the IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard
-This is a set of GNU Radio blocks based on IEEE-ISTO Std 4900-2021: Digital IF Interoperability Standard version 1.0.
-
-There are two DIFI blocks (source and sink) as part of this OOT module. The Bit Depths currently supported are 8 and 16 with upcoming support for the full range of bit depths specified in the DIFI standard.
-
- * __DIFI Source Block__\
-	The DIFI source block receives UDP DIFI packets from a given IP address and port. It then forwards them to GNU Radio as a complex64 (gr_complex) or signed complex 8 (std::complex<char>).
-	This block emits the following tags in the following situations:
-	  - pck_n tag: Emitted when a missed packet occurs, will update the upstream blocks with the current packet number to expect and the current time stamps
-	  - context tag: Emitted when a new DIFI context packet is received with the context packet dynamic information
-	  - static_change: Emitted when the static parts of the DIFI context packet changes
-
-    The DIFI Advanced tab contains more advanced settings for the DIFI block and should be used by users who know the devices and network in use.
-
-   Context Packet Mismatch Behavior:
-      - Default: Throws exceptions if context packet is incorrect or non-compliant
-      - Ignore Mismatches - Forward data, no warnings: Entirely ignore the context packet, only forwards data
-      - Throw Warnings - Forward: Displays Warnings about context packet mismatch or non-compliant context packets, but still forward DIFI data
-      - Throw Warnings - No Forward: Displays Warnings about context packet mismatch or non-compliant context packets, but won't forward data until a correct context packet is received or one that matches the given settings
-
- * __DIFI Sink Block__\
-	The DIFI sink block forwards packets to a given IP address and port number and packets the data with the given bit depth. This block operates in two modes, standalone and paired:
-
-	- Pair Mode: The block expects to be paired with a DIFI source block that sends context packets, timing information, and packet count information. The sink block forwards context packets received via tags. For data packets, it adds the correct timestamps and packet number. The data format is packeted as complex64 (gr_complex) or complex signed 8 (std::complex<char>) samples.
-
-	- Standalone Mode: In standalone mode, it is expected the user will supply the context packet information via GRC or the constructor of the class. For now, the context packet payload data are static once specified by the user. Similar to paired mode, the data format to pack is complex64 (gr_complex) or complex signed 8 (std::complex<char>) samples.
-
-	Scaling Mode: To help mitigate quantization error, the DIFI Sink has an optional helper feature to apply a gain & offset to the input signal. The first mode "Manual" allows a user to manually set gain & offset. In Min-Max mode the user supplies the max and min expected I & Q values and the block solves for a gain & offset based on these and the specified bit depth.
-
-	Note: this block converts from float 32 I and Q down to the specified bit depth for I and Q, which can cause significant quantization error for small signals.
-
-For a brief tutorial on using these blocks, see the [DIFI Examples](./examples/README.md#difi-examples).
-
 
 ### REST API Block
 The REST API block allows users to get status and configure a running top block in GNU Radio. It starts a server in the configured port and restricts which settings and variables in a flowgraph are readable, writable or callable.

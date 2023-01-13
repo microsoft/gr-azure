@@ -21,10 +21,6 @@ namespace py = pybind11;
 // Please do not delete
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
-    void bind_difi_source_cpp(py::module& m);
-    void bind_difi_sink_cpp(py::module& m);
-    void bind_difi_source_cpp(py::module& m);
-    void bind_difi_sink_cpp(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -53,7 +49,5 @@ PYBIND11_MODULE(azure_software_radio_python, m)
     // Please do not delete
     /**************************************/
     // BINDING_FUNCTION_CALLS(
-    bind_difi_source_cpp(m);
-    bind_difi_sink_cpp(m);
     // ) END BINDING_FUNCTION_CALLS
 }

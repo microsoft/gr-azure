@@ -12,14 +12,6 @@
 include(GrPlatform) #define LIB_SUFFIX
 
 list(APPEND azure_software_radio_sources
-    difi_source_cpp_impl.cc
-    difi_sink_cpp_impl.cc
-    tcp_server.h
-    tcp_server.cc
-    tcp_client.h
-    tcp_client.cc
-    udp_socket.h
-    udp_socket.cc
 )
 
 set(azure_software_radio_sources "${azure_software_radio_sources}" PARENT_SCOPE)

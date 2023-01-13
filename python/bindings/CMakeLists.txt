@@ -29,8 +29,7 @@ include(GrPybind)
 ########################################################################
 
 list(APPEND azure_software_radio_python_files
-    difi_source_cpp_python.cc
-    difi_sink_cpp_python.cc python_bindings.cc)
+    )
 
 GR_PYBIND_MAKE_OOT(azure_software_radio 
    ../..
