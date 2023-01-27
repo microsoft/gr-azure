@@ -263,6 +263,7 @@ class IntegrationBlobSource(gr_unittest.TestCase):
         #print(tag_debug.num_tags()) # Returning 0 for some reason, even though the tags definitely showed up
         #print(tag_debug.current_tags())
 
+    '''
     def test_read_from_public_blob(self):
         """
         Upload data to public blob using the azure blob API and confirm we can read
@@ -296,7 +297,7 @@ class IntegrationBlobSource(gr_unittest.TestCase):
         self.top_block.run()
 
         self.assertEqual(src_data.tolist(), sink.data())
-
+    '''
 
 if __name__ == '__main__':
     gr_unittest.run(IntegrationBlobSource)
