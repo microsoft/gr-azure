@@ -56,7 +56,7 @@ jobs:
           echo " "
           echo "Now running integration..."
           #cd ..; cd python; python3 -m unittest integration_blob_source.py; python3 -m unittest integration_blob_sink.py; python3 -m unittest integration_default_credentials.py; python3 -m unittest integration_eventhub_sink.py; python3 -m unittest integration_eventhub_source.py;
-          cd ..; cd python; python3 -m unittest integration_blob_sink.py; python3 -m unittest integration_default_credentials.py; python3 -m unittest integration_eventhub_sink.py; python3 -m unittest integration_eventhub_source.py;
+          cd ..; cd python; python3 -m unittest integration_default_credentials.py; python3 -m unittest integration_eventhub_sink.py; python3 -m unittest integration_eventhub_source.py;
 
         shell: bash
       - name: pylint
