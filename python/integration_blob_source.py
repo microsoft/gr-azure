@@ -263,41 +263,39 @@ class IntegrationBlobSource(gr_unittest.TestCase):
         #print(tag_debug.num_tags()) # Returning 0 for some reason, even though the tags definitely showed up
         #print(tag_debug.current_tags())
 
-    '''
-    def test_read_from_public_blob(self):
-        """
-        Upload data to public blob using the azure blob API and confirm we can read
-        it back in without authenticating
-        """
-        url = os.getenv('AZURE_PUBLIC_STORAGE_URL')
-        public_container_name = os.getenv('PUBLIC_CONTAINER_NAME')
-        blob_name = 'test-blob.npy'
-        num_samples = 1000000
-        dtype = np.complex64
-        sink = blocks.vector_sink_c()
+    #def test_read_from_public_blob(self):
+    #    """
+    #    Upload data to public blob using the azure blob API and confirm we can read
+    #    it back in without authenticating
+    #    """
+    #    url = os.getenv('AZURE_PUBLIC_STORAGE_URL')
+    #    public_container_name = os.getenv('PUBLIC_CONTAINER_NAME')
+    #    blob_name = 'test-blob.npy'
+    #    num_samples = 1000000
+    #    dtype = np.complex64
+    #    sink = blocks.vector_sink_c()
 
-        # set up a vector source with known complex data
-        src_data = np.arange(0, num_samples, 1, dtype=dtype)
-        # connect to the test blob container and upload our test data
-        blob_client = self.blob_service_client.get_blob_client(
-            container=public_container_name,
-            blob=blob_name)
-        blob_client.upload_blob(data=src_data.tobytes(), blob_type='BlockBlob')
+    #    # set up a vector source with known complex data
+    #    src_data = np.arange(0, num_samples, 1, dtype=dtype)
+    #    # connect to the test blob container and upload our test data
+    #    blob_client = self.blob_service_client.get_blob_client(
+    #        container=public_container_name,
+    #        blob=blob_name)
+    #    blob_client.upload_blob(data=src_data.tobytes(), blob_type='BlockBlob')
 
-        op_block = BlobSource(np_dtype=dtype,
-                              vlen=1,
-                              authentication_method="none",
-                              url=url,
-                              container_name=public_container_name,
-                              blob_name=blob_name,
-                              queue_size=4,
-                              retry_total=0)
+    #    op_block = BlobSource(np_dtype=dtype,
+    #                          vlen=1,
+    #                          authentication_method="none",
+    #                          url=url,
+    #                          container_name=public_container_name,
+    #                          blob_name=blob_name,
+    #                          queue_size=4,
+    #                          retry_total=0)
 
-        self.top_block.connect(op_block, sink)
-        self.top_block.run()
+    #    self.top_block.connect(op_block, sink)
+    #    self.top_block.run()
 
-        self.assertEqual(src_data.tolist(), sink.data())
-    '''
+    #    self.assertEqual(src_data.tolist(), sink.data())
 
 if __name__ == '__main__':
     gr_unittest.run(IntegrationBlobSource)
